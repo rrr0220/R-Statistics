@@ -77,29 +77,3 @@ data %>%
   mosaic(shade=TRUE, legend=TRUE, main="Beer?", direction="v")
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

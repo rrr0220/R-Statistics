@@ -1,0 +1,477 @@
+---
+title: "Probability Distribution"
+author: "Ryotaro Nozawa"
+date: '2022-06-16'
+output: 
+  html_document:
+    code_folding: "hide"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE, error = FALSE)
+library(tidyverse)
+library(patchwork)
+```
+
+### **二項分布**
+|||       
+|:-:|:----------:|        
+|意味        |成功確率がpである独立なベルヌーイ試行をn回繰り返す時、成功回数xが従う確率分布|
+|確率変数    |x：成功回数, x ~ Bin(n, p)|
+|パラメータ  |n：試行回数　p：事象が起こる確率|
+|確率質量関数|$$f(x|n,p) = {}_n\mathrm{C}_xp^x(1-p)^{n - x}\quad (x=1,2\cdots,n=1,2\cdots,\ 0<p<1)$$|
+|期待値      |$$E(x)=np$$|
+|分散        |$$V(x)=np(1-p)$$|
+
+```{r binomial, figures-side, fig.show="hold", out.width="50%"}
+# パラメータを指定
+n_vals <- c(10, 20, 50, 100)
+p_vals <- c(0.1, 0.2, 0.3, 0.5, 0.8)
+
+
+# グラフ1
+# 作図用のxの点を作成
+x_vals <- seq(from = 0, to = 100)
+
+# nの値ごとに分布を計算
+res_prob_df <- tidyr::tibble()
+
+for(n in n_vals) {
+  tmp_prob_df <- tidyr::tibble(
+    x = x_vals,                                             # 確率変数
+    probability = dbinom(x = x, size = n, p = 0.5),         # 確率
+    parameter = paste0("n=", n, ", p=0.5") %>% as.factor()  # 作図用のラベル
+  )
+  res_prob_df <- rbind(res_prob_df, tmp_prob_df)
+}
+
+# 描画
+ggplot(data = res_prob_df, 
+       mapping = aes(x = x, y = probability, fill = parameter, color = parameter)) + # データ
+  geom_bar(stat = "identity", position = "dodge") +                                  # 棒グラフ
+  labs(title = "Binomial Distribution")                                              # ラベル
+
+
+# グラフ2
+# 作図用のxの点を作成
+x_vals <- seq(from = 0, to = 50)
+
+# pの値ごとに分布を計算
+res_prob_df <- tidyr::tibble()
+for(p in p_vals) {
+  tmp_prob_df <- tidyr::tibble(
+    x = x_vals,                                             # 確率変数
+    probability = dbinom(x = x, size = 50, p = p),          # 確率
+    parameter = paste0("n=50", ", p=", p) %>% as.factor()   # 作図用のラベル
+  )
+  res_prob_df <- rbind(res_prob_df, tmp_prob_df)
+}
+
+# 描画
+ggplot(data = res_prob_df, 
+       mapping = aes(x = x, y = probability, fill = parameter, color = parameter)) + # データ
+  geom_bar(stat = "identity", position = "dodge") +                                  # 棒グラフ
+  labs(title = "Binomial Distribution")                                              # ラベル
+```
+
+### **ポアソン分布**
+|||       
+|:-:|:----------:|        
+|意味        |単位時間あたりにある事象が平均してλ回起こる場合に、その事象がx回起こる確率|
+|確率変数    |x：事象が起こる回数, x ~ Po(λ)|
+|パラメータ  |λ：ある期間に事象が起こる平均回数|
+|確率質量関数|$$f(x|\lambda) = \frac{\lambda^x}{x!}e^{-\lambda}\quad (x=0,1,2\cdots,\ \lambda>0)$$|
+|期待値      |$$E(x)=\lambda$$|
+|分散        |$$V(x)=\lambda$$|
+
+```{r poisson, figures-side, fig.show="hold", out.width="50%"}
+# パラメータを指定
+lambda_vals <- c(1, 3.5, 8, 15)
+
+# グラフ
+# 作図用のxの点を作成
+x_vals <- seq(from = 0, to = 30)
+
+# lambdaの値ごとに分布を計算
+res_prob_df <- tidyr::tibble()
+for(lambda in lambda_vals) {
+  tmp_prob_df <- tidyr::tibble(
+    x = x_vals,                                           # 確率変数
+    probability = dpois(x = x, lambda = lambda),     　　 # 確率
+    parameter = paste0("lambda=", lambda) %>% as.factor() # 作図用のラベル
+  )
+  res_prob_df <- rbind(res_prob_df, tmp_prob_df)
+}
+
+# 描画（棒）
+ggplot(data = res_prob_df, 
+       mapping = aes(x = x, y = probability, fill = parameter, color = parameter)) + # データ
+  geom_bar(stat = "identity", position = "dodge") +                                  # 棒グラフ
+  labs(title = "Poisson Distribution")                                               # ラベル
+
+# 描画（折れ線）
+ggplot(data = res_prob_df, 
+       mapping = aes(x = x, y = probability, fill = parameter, color = parameter)) + # データ
+  geom_point(size = 2) +                                                             # 散布図
+  geom_line(size = 1) +                                                              # 折れ線グラフ
+  labs(title = "Poisson Distribution")                                               # ラベル
+```
+
+### **指数分布**
+|||       
+|:-:|:----------:|        
+|意味        |単位時間あたりにある事象が平均してλ回起こる場合に、その事象が1回起きるまでの時間tが従う確率分布|
+|確率変数    |t：事象が1回起こるまでの時間, t ~ Ex(λ)|
+|パラメータ  |λ：ある期間に事象が起こる平均回数|
+|確率密度関数|$$f(t|\lambda)=\lambda e^{-\lambda t}\quad (t>0,\ \lambda>0)$$|
+|期待値      |$$E(t)=\frac{1}{\lambda}$$|
+|分散        |$$V(t)=\frac{1}{\lambda^2}$$|
+
+```{r exponential, figures-side, fig.show="hold", out.width="50%"}
+# パラメータを指定
+lambda_vals <- c(0.1, 0.5, 1, 2, 5)
+
+# グラフ
+# 作図用のtの点を作成
+t_vals <- seq(from = 0, to = 10, by = 0.25)
+
+# lambdaの値ごとに分布を計算
+res_prob_df <- tidyr::tibble()
+for(lambda in lambda_vals) {
+  tmp_prob_df <- tidyr::tibble(
+    t = t_vals,                                           # 確率変数
+    probability = dexp(x = t_vals, rate = lambda),        # 確率
+    parameter = paste0("lambda=", lambda) %>% as.factor() # 作図用のラベル
+  )
+  res_prob_df <- rbind(res_prob_df, tmp_prob_df)
+}
+
+# 描画
+ggplot(data = res_prob_df, 
+       mapping = aes(x = t, y = probability, fill = parameter, color = parameter)) + # データ
+  geom_point(size = 2) +                                                             # 散布図
+  geom_line(size = 1) +                                                              # 折れ線グラフ
+  labs(title = "Exponential Distribution")                                           # ラベル
+
+# 描画（拡大）
+ggplot(data = res_prob_df, 
+       mapping = aes(x = t, y = probability, fill = parameter, color = parameter)) + # データ
+  geom_point(size = 2) +                                                             # 散布図
+  geom_line(size = 1) +                                                              # 折れ線グラフ
+  coord_cartesian(ylim = c(0, 0.5)) +                                                # y軸範囲
+  labs(title = "Exponential Distribution")                                           # ラベル
+```
+
+### **ガンマ分布**
+|||       
+|:-:|:----------:|        
+|意味        |単位時間あたりにある事象が平均してλ回起こる場合に、その事象がn回起こるまでの時間tが従う確率分布|
+|確率変数    |t：事象がn回起こるまでの時間, t ~ Ga(n, 1/λ) or Ga(α, β) |
+|パラメータ  |(1) n：事象が起こる回数, λ：ある期間に事象が起こる平均回数 <br>  (2) α(=n)：形状母数, β(=1/λ)：尺度母数
+|確率密度関数|$$(1)\quad f(t|n,\lambda)=\frac{\lambda^n}{\Gamma(n)}t^{n-1}e^{-\lambda t}\quad (t>0,\  n>0,\ \lambda>0) \\ \Gamma(n)=\int^\infty_0s^{n-1}e^{-s}ds \\ (2)\quad f(t|\alpha,\beta)=\frac{1}{\Gamma(\alpha)\beta^\alpha}t^{\alpha-1}e^{-\frac{t}{\beta}}\quad (t>0,\  \alpha>0,\ \beta>0) \\ \Gamma(\alpha)=\int^\infty_0s^{\alpha-1}e^{-s}ds$$|
+|期待値      |$$(1)\quad E(t)=\frac{n}{\lambda}\qquad(2)\quad E(t)=\alpha\beta$$|
+|最頻値      |$$(1)\quad MODE=\frac{n-1}{\lambda}\quad(n>1)\qquad(2)\quad  MODE=(\alpha-1)\beta\quad(\alpha>1)$$|
+|分散        |$$(1)\quad V(t)=\frac{n}{\lambda^2}\qquad(2)\quad V(t)=\alpha\beta^2$$|
+
+```{r gamma, figures-side, fig.show="hold", out.width="50%"}
+# パラメータを指定
+# n_vals <- c(0.5, 1, 5, 10)
+lambda_vals <- c(0.1, 0.5, 1, 2)
+
+
+# グラフ1
+# 作図用のtの点を作成
+t_vals <- seq(from = 0, to = 40, by = 0.5)
+
+# lambdaの値ごとに分布を計算
+res_prob_df <- tidyr::tibble()
+for(lambda in lambda_vals) {
+  tmp_prob_df <- tidyr::tibble(
+    t = t_vals,                                                       # 確率変数
+    probability = dgamma(x = t, shape = 0.5 , rate = lambda),         # 確率
+    parameter = paste0("n=0.5", ", lambda=", lambda) %>% as.factor()  # 作図用のラベル
+  )
+  res_prob_df <- rbind(res_prob_df, tmp_prob_df)
+}
+
+# 描画
+ggplot(data = res_prob_df,
+       mapping = aes(x = t, y = probability, fill = parameter, color = parameter)) + # データ
+  geom_point(size = 2) +                                                             # 散布図
+  geom_line(size = 1) +                                                              # 折れ線グラフ
+  coord_cartesian(ylim = c(0, 0.4)) +                                                # y軸範囲
+  labs(title = "Gamma Distribution")                                                 # ラベル
+
+
+# グラフ2
+# lambdaの値ごとに分布を計算
+res_prob_df <- tidyr::tibble()
+for(lambda in lambda_vals) {
+  tmp_prob_df <- tidyr::tibble(
+    t = t_vals,                                                       # 確率変数
+    probability = dgamma(x = t, shape = 1 , rate = lambda),           # 確率
+    parameter = paste0("n=1", ", lambda=", lambda) %>% as.factor()    # 作図用のラベル
+  )
+  res_prob_df <- rbind(res_prob_df, tmp_prob_df)
+}
+
+# 描画
+ggplot(data = res_prob_df,
+       mapping = aes(x = t, y = probability, fill = parameter, color = parameter)) + # データ
+  geom_point(size = 2) +                                                             # 散布図
+  geom_line(size = 1) +                                                              # 折れ線グラフ
+  coord_cartesian(ylim = c(0, 0.4)) +                                                # y軸範囲
+  labs(title = "Gamma Distribution")                                                 # ラベル\
+
+
+# グラフ3
+# lambdaの値ごとに分布を計算
+res_prob_df <- tidyr::tibble()
+for(lambda in lambda_vals) {
+  tmp_prob_df <- tidyr::tibble(
+    t = t_vals,                                                     # 確率変数
+    probability = dgamma(x = t, shape = 5 , rate = lambda),         # 確率
+    parameter = paste0("n=5", ", lambda=", lambda) %>% as.factor()  # 作図用のラベル
+  )
+  res_prob_df <- rbind(res_prob_df, tmp_prob_df)
+}
+
+# 描画
+ggplot(data = res_prob_df,
+       mapping = aes(x = t, y = probability, fill = parameter, color = parameter)) + # データ
+  geom_point(size = 2) +                                                             # 散布図
+  geom_line(size = 1) +                                                              # 折れ線グラフ
+  coord_cartesian(ylim = c(0, 0.4)) +                                                # y軸範囲
+  labs(title = "Gamma Distribution")                                                 # ラベル
+
+
+# グラフ4
+# lambdaの値ごとに分布を計算4
+res_prob_df <- tidyr::tibble()
+for(lambda in lambda_vals) {
+  tmp_prob_df <- tidyr::tibble(
+    t = t_vals,                                                      # 確率変数
+    probability = dgamma(x = t, shape = 10 , rate = lambda),         # 確率
+    parameter = paste0("n=10", ", lambda=", lambda) %>% as.factor()  # 作図用のラベル
+  )
+  res_prob_df <- rbind(res_prob_df, tmp_prob_df)
+}
+
+# 描画
+ggplot(data = res_prob_df,
+       mapping = aes(x = t, y = probability, fill = parameter, color = parameter)) + # データ
+  geom_point(size = 2) +                                                             # 散布図
+  geom_line(size = 1) +                                                              # 折れ線グラフ
+  coord_cartesian(ylim = c(0, 0.4)) +                                                # y軸範囲
+  labs(title = "Gamma Distribution")                                                 # ラベル
+```
+
+### **ベータ分布**
+|||       
+|:-:|:----------:|        
+|意味        |ある試行の成功回数αと失敗回数βが分かっている現象の成功確率pが従う確率分布|
+|確率変数    |p：成功確率, p ~ Be(α, β)|
+|パラメータ  |α：成功回数 β：失敗回数|
+|確率密度関数|$$f(p|\alpha,\beta)=\frac{p^{\alpha-1}(1-p)^{\beta-1}}{B(\alpha,\beta)}\quad (0<p<1,\ \alpha>0,\ \beta>0)\\B(\alpha,\beta)=\int^1_0p^{\alpha-1}(1-p)^{\beta-1}dp$$|
+|期待値      |$$E(p)=\frac{\alpha}{\alpha+\beta}$$|
+|最頻値      |$$MODE=\frac{\alpha-1}{\alpha+\beta-2}\quad(\alpha>1,\ \beta>1)\ $$|
+|分散        |$$V(p)=\frac{\alpha\beta}{(\alpha+\beta)^2(\alpha+\beta+1)}$$|
+
+```{r beta, figures-side, fig.show="hold", out.width="50%"}
+# パラメータを指定
+beta_vals <- c(0.5, 1, 3, 10)
+
+
+# グラフ1
+# 作図用のpの点を作成
+p_vals <- seq(from = 0, to = 1, by = 0.025)
+
+# betaの値ごとに分布を計算
+res_prob_df <- tidyr::tibble()
+for(beta in beta_vals) {
+  tmp_prob_df <- tidyr::tibble(
+    p = p_vals,                                                       # 確率変数
+    probability = dbeta(x = p, shape1 = 0.5, shape2 = beta),          # 確率
+    parameter = paste0("alpha=0.5", ", beta=", beta) %>% as.factor()  # 作図用のラベル
+  )
+  res_prob_df <- rbind(res_prob_df, tmp_prob_df)
+}
+
+# 描画
+ggplot(data = res_prob_df,
+       mapping = aes(x = p, y = probability, fill = parameter, color = parameter)) + # データ
+  geom_point(size = 2) +                                                             # 散布図
+  geom_line(size = 1) +                                                              # 折れ線グラフ
+  coord_cartesian(ylim = c(0, 5)) +                                                  # y軸範囲
+  labs(title = "Beta Distribution")                                                  # ラベル
+
+
+# グラフ2
+# betaの値ごとに分布を計算
+res_prob_df <- tidyr::tibble()
+for(beta in beta_vals) {
+  tmp_prob_df <- tidyr::tibble(
+    p = p_vals,                                                       # 確率変数
+    probability = dbeta(x = p_vals, shape1 = 1, shape2 = beta),       # 確率
+    parameter = paste0("alpha=1", ", beta=", beta) %>% as.factor()    # 作図用のラベル
+  )
+  res_prob_df <- rbind(res_prob_df, tmp_prob_df)
+}
+
+# 描画
+ggplot(data = res_prob_df,
+       mapping = aes(x = p, y = probability, fill = parameter, color = parameter)) + # データ
+  geom_point(size = 2) +                                                             # 散布図
+  geom_line(size = 1) +                                                              # 折れ線グラフ
+  coord_cartesian(ylim = c(0, 5)) +                                                  # y軸範囲
+  labs(title = "Beta Distribution")                                                  # ラベル
+
+
+# グラフ3
+# betaの値ごとに分布を計算
+res_prob_df <- tidyr::tibble()
+for(beta in beta_vals) {
+  tmp_prob_df <- tidyr::tibble(
+    p = p_vals,                                                       # 確率変数
+    probability = dbeta(x = p_vals, shape1 = 3, shape2 = beta),       # 確率
+    parameter = paste0("alpha=3", ", beta=", beta) %>% as.factor()    # 作図用のラベル
+  )
+  res_prob_df <- rbind(res_prob_df, tmp_prob_df)
+}
+
+# 描画
+ggplot(data = res_prob_df,
+       mapping = aes(x = p, y = probability, fill = parameter, color = parameter)) + # データ
+  geom_point(size = 2) +                                                             # 散布図
+  geom_line(size = 1) +                                                              # 折れ線グラフ
+  coord_cartesian(ylim = c(0, 5)) +                                                  # y軸範囲
+  labs(title = "Beta Distribution")                                                  # ラベル
+
+
+# グラフ4
+# betaの値ごとに分布を計算
+res_prob_df <- tidyr::tibble()
+for(beta in beta_vals) {
+  tmp_prob_df <- tidyr::tibble(
+    p = p_vals,                                                       # 確率変数
+    probability = dbeta(x = p_vals, shape1 = 10, shape2 = beta),      # 確率
+    parameter = paste0("alpha=10", ", beta=", beta) %>% as.factor()   # 作図用のラベル
+  )
+  res_prob_df <- rbind(res_prob_df, tmp_prob_df)
+}
+
+# 描画
+ggplot(data = res_prob_df,
+       mapping = aes(x = p, y = probability, fill = parameter, color = parameter)) + # データ
+  geom_point(size = 2) +                                                             # 散布図
+  geom_line(size = 1) +                                                              # 折れ線グラフ
+  coord_cartesian(ylim = c(0, 5)) +                                                  # y軸範囲
+  labs(title = "Beta Distribution")                                                  # ラベル
+```
+
+### **幾何分布**
+|||       
+|:-:|:----------:|        
+|意味        |(1) 成功確率がpである独立なベルヌーイ試行を繰り返す時、初めて成功するまでの試行回数xが従う確率分布 <br> (2) 成功確率がpである独立なベルヌーイ試行を繰り返す時、初めて成功するまでの失敗回数kが従う確率分布|
+|確率変数    |(1) x：初めて成功するまでの試行回数, x ~ Geo(p) <br> (2) k(=x-1)：初めて成功するまでの失敗回数, k ~ Geo(p)|
+|パラメータ  |p：事象が起こる確率|
+|確率質量関数|$$(1)\quad f(x|p) = (1-p)^{x - 1}\times p\quad (x=1,2\cdots,\ 0<p<1) \\ (2)\quad f(k|p) = (1-p)^k\times p\quad (k=0,1,2\cdots,\ 0<p<1)$$|
+|期待値      |$$(1)\quad E(x)=\frac{1}{p}\qquad(2)\quad E(k)=\frac{1-p}{p}=\frac{1}{p}-1$$|
+|分散        |$$(1)\quad V(x)=\frac{1-p}{p^2}\qquad(2)\quad V(k)=\frac{1-p}{p^2}$$|
+
+```{r geometric, figures-side, fig.show="hold", out.width="50%"}
+# パラメータを指定
+p_vals <- c(0.1, 0.2, 0.3, 0.5, 0.8)
+
+
+# グラフ
+# 作図用のkの点を作成
+k_vals <- seq(from = 0, to = 10)
+
+# pの値ごとに分布を計算
+res_prob_df <- tidyr::tibble()
+for(p in p_vals) {
+  tmp_prob_df <- tidyr::tibble(
+    k = k_vals,                                           # 確率変数
+    probability = dgeom(x = k_vals, p = p),               # 確率(xは失敗する回数)
+    parameter = paste0("p=", p) %>% as.factor()           # 作図用のラベル
+  )
+  res_prob_df <- rbind(res_prob_df, tmp_prob_df)
+}
+
+# 描画（棒）
+ggplot(data = res_prob_df, 
+       mapping = aes(x = k, y = probability, fill = parameter, color = parameter)) + # データ
+  geom_bar(stat = "identity", position = "dodge") +                                  # 棒グラフ
+  coord_cartesian(xlim = c(0, 10), ylim = c(0, 0.8)) +                               # 軸範囲
+  labs(title = "Geometric Distribution")                                             # ラベル
+
+# 描画（折れ線）
+ggplot(data = res_prob_df, 
+       mapping = aes(x = k, y = probability, fill = parameter, color = parameter)) + # データ
+  geom_point(size = 2) +                                                             # 散布図
+  geom_line(size = 1) +                                                              # 折れ線グラフ
+  coord_cartesian(xlim = c(0, 10), ylim = c(0, 0.8)) +                               # 軸範囲
+  labs(title = "Geometric Distribution")                                             # ラベル
+```
+
+### **負の二項分布**
+|||       
+|:-:|:----------:|        
+|意味        |(1) 成功確率がpである独立なベルヌーイ試行を繰り返す時、r回成功するまでの試行回数x=k+rが従う確率分布 <br> (2) 成功確率がpである独立なベルヌーイ試行を繰り返す時、r回成功するまでの失敗回数kが従う確率分布|
+|確率変数    |(1) x(=k+r)：r回成功するまでの試行回数,x ~ NB(r,p) <br> (2) k：r回成功するまでの失敗回数, k ~ NB(r,p)|
+|パラメータ  |p：事象が起こる確率|
+|確率質量関数|$$(1)\quad f(x|r,p) = {}_{x-1}\mathrm{C}_{x-r}p^{r-1}(1-p)^{x-r}\times p\quad (x=1,2\cdots,r=1,2\cdots,\ 0<p<1) \\ (2)\quad f(k|r,p) = {}_{k+r-1}\mathrm{C}_{k}p^{r-1}(1-p)^{k}\times p\quad (k=0,1,2\cdots,r=1,2\cdots,\ 0<p<1) \\ f(k|r,p)=\frac{\Gamma(k+r)}{k!\Gamma(r)}p^{r-1}(1-p)^k\times p\quad (k=0,1,2\cdots,r>0,\ 0<p<1)$$|
+|期待値      |$$(1)\quad E(x)=\frac{r}{p}\qquad(2)\quad E(k)=\frac{r(1-p)}{p}=\frac{r}{p}-r$$|
+|分散        |$$(1)\quad V(x)=\frac{r(1-p)}{p^2}\qquad(2)\quad V(k)=\frac{r(1-p)}{p^2}$$|
+
+```{r negative binomial distribution, figures-side, fig.show="hold", out.width="50%"}
+# パラメータを指定
+r_vals <- c(10, 20, 50, 100)
+p_vals <- c(0.1, 0.2, 0.3, 0.5, 0.8)
+
+# グラフ1
+# 作図用のkの点を作成
+k_vals <- seq(from = 0, to = 150, by = 1)
+
+# rの値ごとに分布を計算
+res_prob_df <- tidyr::tibble()
+for(r in r_vals) {
+  tmp_prob_df <- tidyr::tibble(
+    k = k_vals,                                             # 確率変数
+    probability = dnbinom(x = k, size = r, p = 0.5),        # 確率
+    parameter = paste0("r=", r, ", p=0.5") %>% as.factor()  # 作図用のラベル
+  )
+  res_prob_df <- rbind(res_prob_df, tmp_prob_df)
+}
+
+# 描画
+ggplot(data = res_prob_df,
+       mapping = aes(x = k, y = probability, fill = parameter, color = parameter)) + # データ
+  geom_bar(stat = "identity", position = "dodge") +                                  # 棒グラフ
+  coord_cartesian(xlim = c(0, 150), ylim = c(0, 0.08)) +                             # 軸範囲
+  labs(title = "Negative Binomial Distribution")                                     # ラベル
+
+
+# グラフ2
+# 作図用のkの点を作成
+k_vals <- seq(from = 0, to = 200, by = 2)
+
+# pの値ごとに分布を計算
+res_prob_df <- tidyr::tibble()
+for(p in p_vals) {
+  tmp_prob_df <- tidyr::tibble(
+    k = k_vals,                                             # 確率変数
+    probability = dnbinom(x = k, size = 20, p = p),         # 確率
+    parameter = paste0("r=20", ", p=", p) %>% as.factor()   # 作図用のラベル
+  )
+  res_prob_df <- rbind(res_prob_df, tmp_prob_df)
+}
+
+# 描画
+ggplot(data = res_prob_df,
+       mapping = aes(x = k, y = probability, fill = parameter, color = parameter)) + # データ
+  geom_bar(stat = "identity", position = "dodge") +                                  # 棒グラフ
+  coord_cartesian(xlim = c(0, 200), ylim = c(0, 0.08)) +                             # 軸範囲
+  labs(title = "Negative Binomial Distribution")                                     # ラベル
+```
